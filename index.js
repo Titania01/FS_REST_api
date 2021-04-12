@@ -36,6 +36,12 @@ app.get('/api/persons/:id', (req, res) => {
   }
 })
 
+app.delete('/api/persons/:id', (req, res) => {
+  const id = parseInt(req.params.id)
+  persons = persons.filter(person => person.id !== id)
+  res.status(204).end()
+})
+
 app.listen(9090, () => {
     console.log('Server is running on port 9090')
 })
