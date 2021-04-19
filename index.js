@@ -1,5 +1,7 @@
 import express from 'express'
 const app = express()
+app.disable('x-powered-by')
+app.use(express.json())
 
 let persons = [
   { id: 1, name: 'Arto Hellas', number: '040-123456' },
@@ -7,6 +9,9 @@ let persons = [
   { id: 3, name: 'Dan Abramov', number: '12-34-890763' },
   { id: 4, name: 'Mary Poppendicek', number: '23-67-123456'}
 ]
+
+// const generateId = (length=4) => Math.random().toString(36).substring(2,2+length)
+const generateId = () => persons.length? Math.max(...persons.map(person => person.id)) + 1 : 1
 
 app.get('/', (req, res) => {
     res.send('Hello world')
@@ -40,6 +45,22 @@ app.delete('/api/persons/:id', (req, res) => {
   const id = parseInt(req.params.id)
   persons = persons.filter(person => person.id !== id)
   res.status(204).end()
+})
+
+app.post('/api/persons',(req,res) => {
+  const {name , number} = req.body
+  if(!name || !number) return res.status(400).json({error:"name/number must be supplied!"})
+  const personExist = persons.some(person => person.name.toLowerCase()===name.toLowerCase())
+  if(personExist) return res.status(409).json({error:"name must be unique"})
+  const newPerson = {
+    id:generateId(),
+    name,
+    number
+  }
+  
+  persons = persons.concat(newPerson)
+  return res.json(newPerson)
+
 })
 
 app.listen(9090, () => {

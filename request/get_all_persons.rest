@@ -1,1 +1,10 @@
-GET http:localhost:9090/api/persons/5
+GET http://localhost:9090/api/persons
+
+###
+POST http://localhost:9090/api/persons
+Content-Type: application/json
+
+{
+  "name":"badmus",
+  "number":"12345678"
+}
