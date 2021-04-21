@@ -1,7 +1,14 @@
 import express from 'express'
+import morgan from 'morgan'
 const app = express()
+
 app.disable('x-powered-by')
 app.use(express.json())
+
+morgan.token('data', function (req, res) { return JSON.stringify(req.body)})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
+
 
 let persons = [
   { id: 1, name: 'Arto Hellas', number: '040-123456' },
