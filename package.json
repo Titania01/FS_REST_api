@@ -7,7 +7,7 @@
     "dev": "nodemon --exec babel-node index",
     "start": "node dist/",
     "lint": "./node_modules/.bin/eslint . --fix",
-    "build": "npm run lint && babel ./index -d dist"
+    "build": "npm run lint && babel index -d dist"
   },
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
     "nodemon": "^2.0.7"
   },
   "dependencies": {
+    "@babel/runtime": "^7.13.17",
     "cors": "^2.8.5",
     "express": "^4.17.1"
   }
