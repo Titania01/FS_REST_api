@@ -61,24 +61,47 @@ app.get("/api/persons", (req, res) => {
     });
 });
 
-app.get("/info", (req, res) => {
-  res.send(`<p>Phonebook has info for ${persons.length} people</p> 
-  <h4>${new Date()}</h4>
-  `);
+app.get("/info", (req, res, next) => {
+  Person.countDocuments({})
+    .then((count) => {
+      res.send(`<p>Phonebook has info for ${count} people</p> 
+    <h4>${new Date()}</h4>
+    `);
+    })
+    .catch((err) => next(err));
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  const id = Number(req.params.id);
+app.get("/api/persons/:id", (req, res, next) => {
+  const { id } = req.params;
   console.log(id);
-  const person = persons.find((person) => person.id === id);
-  console.log(person);
-  res.json(person);
+  Person.findById(id)
+    .then((contact) => {
+      if (contact) return res.send(contact);
+      else return res.status(404).end();
+    })
+    .catch((err) => next(err));
+});
 
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  }
+app.post("/api/persons", (req, res) => {
+  let newContact = req.body;
+  if (!newContact.name || !newContact.number)
+    return res.status(400).send(`name / number not supplied`);
+  new Person(newContact)
+    .save()
+    .then((response) => {
+      res.json(response);
+    })
+    .catch((err) => {
+      res.status(500).end();
+    });
+});
+
+app.put("/api/persons/:id", (req, res, next) => {
+  const { id } = req.params;
+  const personUpdate = req.body.number;
+  Person.findByIdAndUpdate(id, { number: personUpdate }, { new: true })
+    .then((updatedPerson) => res.json(updatedPerson))
+    .catch((err) => next(err));
 });
 
 app.delete("/api/persons/:id", async (req, res) => {
