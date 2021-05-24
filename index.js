@@ -82,19 +82,19 @@ app.get("/api/persons/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-app.post("/api/persons", (req, res) => {
-  let newContact = req.body;
-  if (!newContact.name || !newContact.number)
-    return res.status(400).send(`name / number not supplied`);
-  new Person(newContact)
-    .save()
-    .then((response) => {
-      res.json(response);
-    })
-    .catch((err) => {
-      res.status(500).end();
-    });
-});
+// app.post("/api/persons", (req, res) => {
+//   let newContact = req.body;
+//   if (!newContact.name || !newContact.number)
+//     return res.status(400).send(`name / number not supplied`);
+//   new Person(newContact)
+//     .save()
+//     .then((response) => {
+//       res.json(response);
+//     })
+//     .catch((err) => {
+//       res.status(500).end();
+//     });
+// });
 
 app.put("/api/persons/:id", (req, res, next) => {
   const { id } = req.params;
@@ -104,26 +104,23 @@ app.put("/api/persons/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
-app.delete("/api/persons/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-  persons = persons.filter((person) => person.id !== id);
-  res.status(204).end();
+app.delete("/api/persons/:id", async (req, res, next) => {
+  const { id } = req.params;
+  Person.findByIdAndDelete(id)
+    .then((response) => res.status(204).end())
+    .catch((err) => next(err));
 });
 
 app.post("/api/persons", async (req, res) => {
   const { name, number } = req.body;
   if (!name || !number)
     return res.status(400).json({ error: "name/number must be supplied!" });
-  // const personExist = persons.some(
-  //   (person) => person.name.toLowerCase() === name.toLowerCase()
-  // );
   const personExist = await Person.findOne({ name });
   if (personExist)
     return res.status(409).json({ error: "name must be unique" });
   console.log("i got here");
 
   let newPerson = new Person({
-    // id: generateId(),
     name,
     number,
   });
@@ -131,6 +128,17 @@ app.post("/api/persons", async (req, res) => {
   newPerson = await newPerson.save();
   return res.json(newPerson);
 });
+
+const errorHandler = (err, req, res, next) => {
+  console.log(err.message);
+
+  if (err.name === "CastError") {
+    return res.status(400).send({ error: "malfortted id" });
+  }
+  next(err);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 
