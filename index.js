@@ -8,6 +8,8 @@ const { dbUrl } = require("./utils/config");
 
 const cors = require("cors");
 
+app.use(express.static("build"));
+
 app.use(cors());
 
 app.disable("x-powered-by");
@@ -115,18 +117,26 @@ app.post("/api/persons", async (req, res) => {
   const { name, number } = req.body;
   if (!name || !number)
     return res.status(400).json({ error: "name/number must be supplied!" });
-  const personExist = await Person.findOne({ name });
-  if (personExist)
-    return res.status(409).json({ error: "name must be unique" });
-  console.log("i got here");
 
-  let newPerson = new Person({
-    name,
-    number,
-  });
+  try {
+    const personExist = await Person.findOne({ name });
+    if (personExist)
+      return res.status(400).json({ error: "name must be unique" });
+    console.log("i got here");
 
-  newPerson = await newPerson.save();
-  return res.json(newPerson);
+    let newPerson = new Person({
+      name,
+      number,
+    });
+
+    newPerson = await newPerson.save();
+    return res.json(newPerson);
+  } catch (err) {
+    res.status(400).json({
+      message: "failure",
+      payload: err,
+    });
+  }
 });
 
 const errorHandler = (err, req, res, next) => {
